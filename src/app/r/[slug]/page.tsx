@@ -12,23 +12,27 @@ import { ProductList } from "@/features/menu/ProductList";
 export default observer(function RestaurantMenuPage() {
   const params = useParams();
   const pathname = usePathname();
-  // При клиентской навигации useParams() может быть пустым — берём slug из pathname
   const slugFromParams = params?.slug as string | undefined;
   const slugFromPath = pathname?.match(/^\/r\/([^/]+)/)?.[1];
-  const slug = slugFromParams || slugFromPath || "";
+  const slugFromWindow =
+    typeof window !== "undefined" ? window.location.pathname.match(/^\/r\/([^/]+)/)?.[1] : undefined;
+  const slug = slugFromParams || slugFromPath || slugFromWindow || "";
 
   const [fetchDone, setFetchDone] = useState(false);
   const { current, loading: restLoading } = restaurantStore;
-  const { fetchCategories, fetchAllProducts } = menuStore;
 
   useEffect(() => {
-    if (!slug) return;
+    const resolvedSlug =
+      (params?.slug as string) ||
+      (pathname?.match(/^\/r\/([^/]+)/)?.[1]) ||
+      (typeof window !== "undefined" ? window.location.pathname.match(/^\/r\/([^/]+)/)?.[1] : undefined);
+    if (!resolvedSlug) return;
     setFetchDone(false);
-    restaurantStore.fetchBySlug(slug).finally(() => setFetchDone(true));
+    restaurantStore.fetchBySlug(resolvedSlug).finally(() => setFetchDone(true));
     menuStore.setSelectedCategoryId(null);
-    fetchCategories(slug);
-    fetchAllProducts(slug);
-  }, [slug, fetchCategories, fetchAllProducts]);
+    menuStore.fetchCategories(resolvedSlug);
+    menuStore.fetchAllProducts(resolvedSlug);
+  }, [slug, pathname, params?.slug]);
 
   useEffect(() => {
     if (current?.id) {
@@ -40,7 +44,11 @@ export default observer(function RestaurantMenuPage() {
     menuStore.setSelectedCategoryId(id);
   };
 
-  const isLoading = !slug || !fetchDone || restLoading;
+  const resolvedSlugForDisplay =
+    slug ||
+    (pathname?.match(/^\/r\/([^/]+)/)?.[1]) ||
+    (typeof window !== "undefined" ? window.location.pathname.match(/^\/r\/([^/]+)/)?.[1] : undefined);
+  const isLoading = !resolvedSlugForDisplay || !fetchDone || restLoading;
   if (isLoading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
@@ -74,7 +82,7 @@ export default observer(function RestaurantMenuPage() {
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <Link href={`/r/${slug}/reservation`}>
+          <Link href={`/r/${current.slug}/reservation`}>
             <Button>Бронировать</Button>
           </Link>
           <Link href="/cart">

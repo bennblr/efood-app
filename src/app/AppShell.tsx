@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import { signIn, signOut } from "next-auth/react";
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Spin } from "antd";
 import { userStore } from "@/stores";
 import { Providers } from "./providers/Providers";
 import styles from "./AppShell.module.css";
@@ -76,6 +76,14 @@ const AppShellInnerBase = ({ children }: { children: React.ReactNode }) => {
             ? []
             : [{ key: "signout", label: "Выйти" }]),
       ];
+
+  if (userStore.loading) {
+    return (
+      <div className={styles.sessionLoader}>
+        <Spin size="large" tip="Загрузка..." />
+      </div>
+    );
+  }
 
   return (
     <Layout className={styles.layout}>
