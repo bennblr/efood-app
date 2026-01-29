@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import { signIn, signOut } from "next-auth/react";
-import { Layout, Menu, Spin } from "antd";
+import { Layout, Menu } from "antd";
 import { userStore } from "@/stores";
 import { Providers } from "./providers/Providers";
 import styles from "./AppShell.module.css";
@@ -98,13 +98,7 @@ const AppShellInnerBase = ({ children }: { children: React.ReactNode }) => {
         />
       </Layout.Header>
       <Layout.Content className={styles.content}>
-        {userStore.loading ? (
-          <div className={styles.spinWrap}>
-            <Spin size="large" />
-          </div>
-        ) : (
-          children
-        )}
+        {children}
       </Layout.Content>
     </Layout>
   );

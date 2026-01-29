@@ -31,11 +31,12 @@ export class RestaurantStore {
       const res = await apiFetch("/api/restaurants");
       const data = await res.json();
       runInAction(() => {
-        this.list = data;
+        this.list = Array.isArray(data) ? data : [];
       });
     } catch (e) {
       runInAction(() => {
         this.error = e instanceof Error ? e.message : "Ошибка загрузки ресторанов";
+        this.list = [];
       });
     } finally {
       runInAction(() => {

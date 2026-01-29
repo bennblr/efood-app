@@ -46,6 +46,15 @@
 
 Если приложение на Render не подключается к БД, добавьте к `DATABASE_URL` параметр: `?sslmode=require` (в конце URL).
 
+**Чтобы на главной появились рестораны**, после первого деплоя выполните заполнение базы тестовыми данными (локально с продакшен-`DATABASE_URL` или через Shell на Render):
+
+```bash
+npx prisma db push
+npm run db:seed
+```
+
+Аккаунты для входа см. в файле `TEST_ACCOUNTS.md` (пароль по умолчанию: `test123`).
+
 ## Маршруты
 
 - **Клиент:** `/` (меню), `/cart`, `/reservation`, `/checkout`, `/orders`, `/my-reservations`

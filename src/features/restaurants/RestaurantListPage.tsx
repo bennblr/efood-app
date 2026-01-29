@@ -2,16 +2,16 @@
 
 import { useEffect } from "react";
 import { observer } from "mobx-react-lite";
-import { Card, Typography, Spin, Row, Col } from "antd";
+import { Card, Typography, Spin, Row, Col, Alert } from "antd";
 import Link from "next/link";
 import { restaurantStore } from "@/stores";
 
 export const RestaurantListPage = observer(function RestaurantListPage() {
-  const { list, loading, fetchList } = restaurantStore;
+  const { list, loading, error, fetchList } = restaurantStore;
 
   useEffect(() => {
-    fetchList();
-  }, [fetchList]);
+    restaurantStore.fetchList();
+  }, []);
 
   if (loading) {
     return (
@@ -27,6 +27,15 @@ export const RestaurantListPage = observer(function RestaurantListPage() {
       <Typography.Paragraph type="secondary">
         Выберите ресторан, чтобы посмотреть меню и оформить заказ.
       </Typography.Paragraph>
+      {error && (
+        <Alert
+          type="error"
+          message="Ошибка загрузки"
+          description={error}
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
       <Row gutter={[16, 16]}>
         {list.map((r) => (
           <Col xs={24} sm={12} md={8} key={r.id}>
@@ -65,8 +74,12 @@ export const RestaurantListPage = observer(function RestaurantListPage() {
           </Col>
         ))}
       </Row>
-      {list.length === 0 && (
-        <Typography.Paragraph>Пока нет ресторанов.</Typography.Paragraph>
+      {!error && list.length === 0 && (
+        <Typography.Paragraph>
+          Пока нет ресторанов. Если вы администратор платформы, добавьте рестораны в разделе{" "}
+          <Link href="/admin/restaurants">Админка → Рестораны</Link> или выполните заполнение базы:{" "}
+          <code>npm run db:seed</code> (на сервере с настроенным DATABASE_URL).
+        </Typography.Paragraph>
       )}
     </>
   );
