@@ -36,6 +36,16 @@
    UPDATE users SET role = 'admin' WHERE telegram_id = 'YOUR_TELEGRAM_ID';
    ```
 
+## Деплой на Render.com
+
+В **Environment** сервиса обязательно задайте:
+
+- **NEXTAUTH_URL** = `https://efood-app.onrender.com` (URL вашего сервиса, без слэша в конце)
+- **NEXTAUTH_SECRET** = строка не короче 32 символов (иначе `/api/auth/session` и `/api/auth/providers` могут отдавать 500)
+- **DATABASE_URL** = External Database URL из панели PostgreSQL на Render
+
+Если приложение на Render не подключается к БД, добавьте к `DATABASE_URL` параметр: `?sslmode=require` (в конце URL).
+
 ## Маршруты
 
 - **Клиент:** `/` (меню), `/cart`, `/reservation`, `/checkout`, `/orders`, `/my-reservations`
