@@ -7,10 +7,11 @@ import styles from "./ProductCard.module.css";
 
 interface ProductCardProps {
   product: Product;
+  restaurantId?: string;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
-  const addToCart = () => cartStore.addItem(product, 1);
+export function ProductCard({ product, restaurantId }: ProductCardProps) {
+  const addToCart = () => cartStore.addItem(product, 1, undefined, restaurantId);
 
   return (
     <Card

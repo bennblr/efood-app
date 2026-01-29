@@ -40,7 +40,10 @@ export function AdminCategories() {
         await apiFetch("/api/admin/categories", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(v),
+          body: JSON.stringify({
+            ...v,
+            restaurantId: adminStore.currentRestaurantId,
+          }),
         });
         message.success("Создано");
       }

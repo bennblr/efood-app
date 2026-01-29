@@ -7,28 +7,33 @@ import { menuStore } from "@/stores";
 import { CategoryList } from "./CategoryList";
 import { ProductList } from "./ProductList";
 
-export const MenuPage = observer(function MenuPage() {
+interface MenuPageProps {
+  restaurantId: string;
+}
+
+/** Страница меню для выбранного ресторана. Используется при необходимости; основная точка входа — /r/[slug]. */
+export const MenuPage = observer(function MenuPage({ restaurantId }: MenuPageProps) {
   const { fetchCategories, fetchProducts, selectedCategoryId, loading } =
     menuStore;
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    fetchCategories(restaurantId);
+  }, [restaurantId, fetchCategories]);
 
   useEffect(() => {
-    if (selectedCategoryId) fetchProducts(selectedCategoryId);
-  }, [selectedCategoryId, fetchProducts]);
+    if (selectedCategoryId) fetchProducts(restaurantId, selectedCategoryId);
+  }, [restaurantId, selectedCategoryId, fetchProducts]);
 
   const handleSelectCategory = (id: string) => {
     menuStore.setSelectedCategoryId(id);
-    menuStore.fetchProducts(id);
+    menuStore.fetchProducts(restaurantId, id);
   };
 
   return (
     <>
       <Typography.Title level={4}>Меню</Typography.Title>
       <CategoryList onSelect={handleSelectCategory} />
-      <ProductList />
+      <ProductList restaurantId={restaurantId} />
     </>
   );
 });

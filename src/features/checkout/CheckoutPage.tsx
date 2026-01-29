@@ -18,9 +18,14 @@ export function CheckoutPage() {
 
   const submit = async () => {
     if (cartStore.isEmpty) return;
+    if (!cartStore.restaurantId) {
+      message.error("Ошибка: ресторан не выбран");
+      return;
+    }
     setLoading(true);
     try {
       await orderStore.create({
+        restaurantId: cartStore.restaurantId,
         reservationId: reservationId || undefined,
         items: cartStore.items.map((i) => ({
           productId: i.productId,
@@ -43,7 +48,7 @@ export function CheckoutPage() {
         <Typography.Title level={4}>Оформление заказа</Typography.Title>
         <Typography.Paragraph>Корзина пуста.</Typography.Paragraph>
         <Link href="/">
-          <Button type="primary">В меню</Button>
+          <Button type="primary">К ресторанам</Button>
         </Link>
       </>
     );

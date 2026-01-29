@@ -44,6 +44,7 @@ export class OrderStore {
   }
 
   async create(params: {
+    restaurantId: string;
     reservationId?: string | null;
     items: { productId: string; quantity: number; comment?: string }[];
   }) {

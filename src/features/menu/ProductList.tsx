@@ -5,7 +5,11 @@ import { Row, Col, Spin, Empty } from "antd";
 import { menuStore } from "@/stores";
 import { ProductCard } from "./ProductCard";
 
-export const ProductList = observer(function ProductList() {
+interface ProductListProps {
+  restaurantId?: string;
+}
+
+export const ProductList = observer(function ProductList({ restaurantId }: ProductListProps) {
   const { products, loading } = menuStore;
 
   if (loading) return <Spin size="large" />;
@@ -15,7 +19,7 @@ export const ProductList = observer(function ProductList() {
     <Row gutter={[16, 16]}>
       {products.map((p) => (
         <Col xs={24} sm={12} md={8} key={p.id}>
-          <ProductCard product={p} />
+          <ProductCard product={p} restaurantId={restaurantId} />
         </Col>
       ))}
     </Row>

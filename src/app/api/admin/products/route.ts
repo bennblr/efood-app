@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getCurrentUserRole,
+  getAdminRestaurantId,
   unauthorized,
   forbidden,
   requireAdmin,
@@ -13,7 +14,16 @@ export async function GET(req: NextRequest) {
   if (!user) return unauthorized();
   if (!requireAdmin(user.role)) return forbidden();
 
+  const restaurantId = await getAdminRestaurantId(req);
+  if (!restaurantId) {
+    return NextResponse.json(
+      { error: "restaurantId required (query or session)" },
+      { status: 400 }
+    );
+  }
+
   const list = await prisma.product.findMany({
+    where: { category: { restaurantId } },
     include: { category: true },
     orderBy: { title: "asc" },
   });
@@ -27,7 +37,7 @@ export async function GET(req: NextRequest) {
       imageUrl: p.imageUrl,
       available: p.available,
       category: p.category
-        ? { id: p.category.id, title: p.category.title }
+        ? { id: p.category.id, title: p.category.title, restaurantId: p.category.restaurantId }
         : null,
     }))
   );
@@ -47,6 +57,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const restaurantId = await getAdminRestaurantId(req);
+  if (!restaurantId) {
+    return NextResponse.json(
+      { error: "restaurantId required (query or session)" },
+      { status: 400 }
+    );
+  }
+
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId, restaurantId },
+  });
+  if (!category) {
+    return NextResponse.json({ error: "Category not found or not in your restaurant" }, { status: 404 });
+  }
+
   const product = await prisma.product.create({
     data: {
       categoryId,
@@ -57,7 +82,7 @@ export async function POST(req: NextRequest) {
       available: available !== false,
     },
   });
-  await createAuditLog(user.userId, "CREATE_PRODUCT", "product", product.id);
+  await createAuditLog(user.userId, "CREATE_PRODUCT", "product", product.id, restaurantId);
   return NextResponse.json({
     id: product.id,
     categoryId: product.categoryId,

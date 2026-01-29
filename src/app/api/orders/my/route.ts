@@ -12,17 +12,20 @@ export async function GET(req: NextRequest) {
     include: {
       items: { include: { product: true } },
       reservation: true,
+      restaurant: { select: { id: true, name: true, slug: true } },
     },
   });
 
   return NextResponse.json(
     orders.map((o) => ({
       id: o.id,
+      restaurantId: o.restaurantId,
       reservationId: o.reservationId,
       userId: o.userId,
       status: o.status,
       totalAmount: Number(o.totalAmount),
       createdAt: o.createdAt.toISOString(),
+      restaurant: o.restaurant,
       items: o.items.map((i) => ({
         id: i.id,
         productId: i.productId,

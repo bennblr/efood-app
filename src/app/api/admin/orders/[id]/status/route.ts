@@ -43,6 +43,9 @@ export async function PATCH(
 
   const current = await prisma.order.findUnique({ where: { id } });
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (user.restaurantId && current.restaurantId !== user.restaurantId) {
+    return forbidden();
+  }
   const allowedNext = ALLOWED[current.status] ?? [];
   if (!allowedNext.includes(status)) {
     return NextResponse.json(
@@ -55,7 +58,7 @@ export async function PATCH(
     where: { id },
     data: { status },
   });
-  await createAuditLog(user.userId, "UPDATE_ORDER_STATUS", "order", id);
+  await createAuditLog(user.userId, "UPDATE_ORDER_STATUS", "order", id, current.restaurantId);
   return NextResponse.json({
     id: order.id,
     status: order.status,

@@ -9,12 +9,16 @@ export async function GET(req: NextRequest) {
   const reservations = await prisma.reservation.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    include: { user: { select: { id: true, name: true, username: true } } },
+    include: {
+      user: { select: { id: true, name: true, username: true } },
+      restaurant: { select: { id: true, name: true, slug: true } },
+    },
   });
 
   return NextResponse.json(
     reservations.map((r) => ({
       id: r.id,
+      restaurantId: r.restaurantId,
       userId: r.userId,
       status: r.status,
       startTime: r.startTime.toISOString(),
@@ -22,6 +26,7 @@ export async function GET(req: NextRequest) {
       personsCount: r.personsCount,
       createdAt: r.createdAt.toISOString(),
       user: r.user,
+      restaurant: r.restaurant,
     }))
   );
 }
@@ -31,22 +36,31 @@ export async function POST(req: NextRequest) {
   if (!userId) return unauthorized();
 
   const body = await req.json();
-  const { startTime, endTime, personsCount } = body;
+  const { restaurantId, startTime, endTime, personsCount } = body;
 
   if (
+    !restaurantId ||
     !startTime ||
     !endTime ||
     typeof personsCount !== "number" ||
     personsCount < 1
   ) {
     return NextResponse.json(
-      { error: "startTime, endTime, personsCount required" },
+      { error: "restaurantId, startTime, endTime, personsCount required" },
       { status: 400 }
     );
   }
 
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+  });
+  if (!restaurant) {
+    return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+  }
+
   const reservation = await prisma.reservation.create({
     data: {
+      restaurantId,
       userId,
       startTime: new Date(startTime),
       endTime: new Date(endTime),
@@ -57,6 +71,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     id: reservation.id,
+    restaurantId: reservation.restaurantId,
     userId: reservation.userId,
     status: reservation.status,
     startTime: reservation.startTime.toISOString(),

@@ -8,18 +8,29 @@ export async function POST(req: NextRequest) {
   if (!userId) return unauthorized();
 
   const body = await req.json();
-  const { reservationId, items } = body;
+  const { restaurantId, reservationId, items } = body;
 
-  if (!Array.isArray(items) || items.length === 0) {
+  if (!restaurantId || !Array.isArray(items) || items.length === 0) {
     return NextResponse.json(
-      { error: "items array required" },
+      { error: "restaurantId and items array required" },
       { status: 400 }
     );
   }
 
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: restaurantId },
+  });
+  if (!restaurant) {
+    return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+  }
+
   const productIds = items.map((i: { productId: string }) => i.productId);
   const products = await prisma.product.findMany({
-    where: { id: { in: productIds }, available: true },
+    where: {
+      id: { in: productIds },
+      available: true,
+      category: { restaurantId },
+    },
   });
   const priceMap = new Map(products.map((p) => [p.id, p.price]));
 
@@ -47,6 +58,7 @@ export async function POST(req: NextRequest) {
 
   const order = await prisma.order.create({
     data: {
+      restaurantId,
       userId,
       reservationId: reservationId || null,
       status: "new",
@@ -62,6 +74,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     id: order.id,
+    restaurantId: order.restaurantId,
     reservationId: order.reservationId,
     userId: order.userId,
     status: order.status,

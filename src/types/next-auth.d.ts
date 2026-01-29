@@ -5,10 +5,11 @@ declare module "next-auth" {
     id?: string;
     telegramId?: string;
     role?: string;
+    restaurantId?: string;
   }
 
   interface Session {
-    user?: User & { id?: string; telegramId?: string; role?: string };
+    user?: User & { id?: string; telegramId?: string; role?: string; restaurantId?: string };
   }
 }
 
@@ -17,5 +18,6 @@ declare module "next-auth/jwt" {
     id?: string;
     telegramId?: string;
     role?: string;
+    restaurantId?: string;
   }
 }

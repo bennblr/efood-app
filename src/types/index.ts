@@ -10,6 +10,15 @@ export type OrderStatus =
   | "completed"
   | "cancelled";
 
+export interface Restaurant {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrl: string | null;
+  createdAt: string;
+}
+
 export interface User {
   id: string;
   telegramId: string | null;
@@ -17,11 +26,13 @@ export interface User {
   name: string | null;
   username: string | null;
   role: UserRole;
+  restaurantId: string | null;
   createdAt: string;
 }
 
 export interface Category {
   id: string;
+  restaurantId: string;
   title: string;
   description: string | null;
   products?: Product[];
@@ -47,6 +58,7 @@ export interface CartItem {
 
 export interface Reservation {
   id: string;
+  restaurantId: string;
   userId: string;
   status: ReservationStatus;
   startTime: string;
@@ -55,6 +67,7 @@ export interface Reservation {
   createdAt: string;
   user?: User;
   orders?: Order[];
+  restaurant?: Restaurant;
 }
 
 export interface OrderItem {
@@ -69,6 +82,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  restaurantId: string;
   reservationId: string | null;
   userId: string;
   status: OrderStatus;
@@ -77,10 +91,12 @@ export interface Order {
   reservation?: Reservation | null;
   user?: User;
   items?: OrderItem[];
+  restaurant?: Restaurant;
 }
 
 export interface MenuSchedule {
   id: string;
+  restaurantId: string;
   dayOfWeek: number;
   openTime: string;
   closeTime: string;
@@ -89,6 +105,7 @@ export interface MenuSchedule {
 export interface AuditLog {
   id: string;
   userId: string;
+  restaurantId: string | null;
   action: string;
   entityType: string;
   entityId: string;

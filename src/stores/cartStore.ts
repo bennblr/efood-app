@@ -2,13 +2,21 @@ import { makeAutoObservable } from "mobx";
 import type { CartItem, Product } from "@/types";
 
 export class CartStore {
+  restaurantId: string | null = null;
   items: CartItem[] = [];
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  addItem(product: Product, quantity = 1, comment?: string) {
+  /** Добавить в корзину. restaurantId — id ресторана (из категории/контекста). При смене ресторана корзина очищается. */
+  addItem(product: Product, quantity = 1, comment?: string, restaurantId?: string) {
+    const rid = restaurantId ?? this.restaurantId;
+    if (rid && this.restaurantId !== null && this.restaurantId !== rid) {
+      this.clear();
+    }
+    if (rid) this.restaurantId = rid;
+
     const existing = this.items.find((i) => i.productId === product.id);
     if (existing) {
       existing.quantity += quantity;
@@ -42,6 +50,7 @@ export class CartStore {
 
   clear() {
     this.items = [];
+    this.restaurantId = null;
   }
 
   get totalSum() {

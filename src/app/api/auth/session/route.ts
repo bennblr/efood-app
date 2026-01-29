@@ -26,6 +26,7 @@ export async function GET() {
         name: user.name,
         username: user.username,
         role: user.role,
+        restaurantId: user.restaurantId,
         createdAt: user.createdAt.toISOString(),
       },
     });

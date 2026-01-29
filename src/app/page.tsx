@@ -1,7 +1,7 @@
 "use client";
 
-import { MenuPage } from "@/features/menu/MenuPage";
+import { RestaurantListPage } from "@/features/restaurants/RestaurantListPage";
 
 export default function Home() {
-  return <MenuPage />;
+  return <RestaurantListPage />;
 }

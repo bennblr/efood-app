@@ -16,7 +16,7 @@ declare global {
 }
 
 const NAV_ITEMS = [
-  { key: "/", label: "Меню" },
+  { key: "/", label: "Рестораны" },
   { key: "/cart", label: "Корзина" },
   { key: "/reservation", label: "Бронирование" },
   { key: "/orders", label: "Мои заказы" },

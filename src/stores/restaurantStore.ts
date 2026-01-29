@@ -1,9 +1,10 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import type { Reservation } from "@/types";
+import type { Restaurant } from "@/types";
 import { apiFetch } from "@/lib/api";
 
-export class ReservationStore {
-  list: Reservation[] = [];
+export class RestaurantStore {
+  list: Restaurant[] = [];
+  current: Restaurant | null = null;
   loading = false;
   error: string | null = null;
 
@@ -11,8 +12,8 @@ export class ReservationStore {
     makeAutoObservable(this);
   }
 
-  setList(list: Reservation[]) {
-    this.list = list;
+  setCurrent(restaurant: Restaurant | null) {
+    this.current = restaurant;
   }
 
   setLoading(loading: boolean) {
@@ -23,18 +24,18 @@ export class ReservationStore {
     this.error = error;
   }
 
-  async fetchMyReservations() {
+  async fetchList() {
     this.loading = true;
     this.error = null;
     try {
-      const res = await apiFetch("/api/reservations/my");
+      const res = await apiFetch("/api/restaurants");
       const data = await res.json();
       runInAction(() => {
         this.list = data;
       });
     } catch (e) {
       runInAction(() => {
-        this.error = e instanceof Error ? e.message : "Ошибка загрузки броней";
+        this.error = e instanceof Error ? e.message : "Ошибка загрузки ресторанов";
       });
     } finally {
       runInAction(() => {
@@ -43,30 +44,28 @@ export class ReservationStore {
     }
   }
 
-  async create(params: {
-    restaurantId: string;
-    startTime: string;
-    endTime: string;
-    personsCount: number;
-  }) {
+  async fetchBySlug(slug: string) {
     this.loading = true;
     this.error = null;
     try {
-      const res = await apiFetch("/api/reservations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      });
+      const res = await apiFetch(`/api/restaurants/${encodeURIComponent(slug)}`);
+      if (!res.ok) {
+        runInAction(() => {
+          this.current = null;
+        });
+        return null;
+      }
       const data = await res.json();
       runInAction(() => {
-        this.list.unshift(data);
+        this.current = data;
       });
-      return data;
+      return data as Restaurant;
     } catch (e) {
       runInAction(() => {
-        this.error = e instanceof Error ? e.message : "Ошибка создания брони";
+        this.error = e instanceof Error ? e.message : "Ошибка загрузки ресторана";
+        this.current = null;
       });
-      throw e;
+      return null;
     } finally {
       runInAction(() => {
         this.loading = false;
@@ -75,4 +74,4 @@ export class ReservationStore {
   }
 }
 
-export const reservationStore = new ReservationStore();
+export const restaurantStore = new RestaurantStore();

@@ -3,6 +3,7 @@ import type { Category, Product } from "@/types";
 import { apiFetch } from "@/lib/api";
 
 export class MenuStore {
+  restaurantId: string | null = null;
   categories: Category[] = [];
   productsByCategory: Record<string, Product[]> = {};
   selectedCategoryId: string | null = null;
@@ -11,6 +12,15 @@ export class MenuStore {
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  setRestaurantId(id: string | null) {
+    this.restaurantId = id;
+    if (!id) {
+      this.categories = [];
+      this.productsByCategory = {};
+      this.selectedCategoryId = null;
+    }
   }
 
   setCategories(categories: Category[]) {
@@ -38,13 +48,14 @@ export class MenuStore {
     return this.productsByCategory[this.selectedCategoryId] ?? [];
   }
 
-  async fetchCategories() {
+  async fetchCategories(restaurantId: string) {
     this.loading = true;
     this.error = null;
     try {
-      const res = await apiFetch("/api/menu/categories");
+      const res = await apiFetch(`/api/restaurants/${encodeURIComponent(restaurantId)}/categories`);
       const data = await res.json();
       runInAction(() => {
+        this.restaurantId = restaurantId;
         this.categories = data;
       });
     } catch (e) {
@@ -58,11 +69,13 @@ export class MenuStore {
     }
   }
 
-  async fetchProducts(categoryId: string) {
+  async fetchProducts(restaurantId: string, categoryId: string) {
     this.loading = true;
     this.error = null;
     try {
-      const res = await apiFetch(`/api/menu/categories/${categoryId}/products`);
+      const res = await apiFetch(
+        `/api/restaurants/${encodeURIComponent(restaurantId)}/categories/${encodeURIComponent(categoryId)}/products`
+      );
       const data = await res.json();
       runInAction(() => {
         this.productsByCategory[categoryId] = data;

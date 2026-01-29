@@ -34,6 +34,9 @@ export async function PATCH(
 
   const current = await prisma.reservation.findUnique({ where: { id } });
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (user.restaurantId && current.restaurantId !== user.restaurantId) {
+    return forbidden();
+  }
   const allowedNext = ALLOWED[current.status] ?? [];
   if (!allowedNext.includes(status)) {
     return NextResponse.json(
@@ -50,7 +53,8 @@ export async function PATCH(
     user.userId,
     "UPDATE_RESERVATION_STATUS",
     "reservation",
-    id
+    id,
+    current.restaurantId
   );
   return NextResponse.json({
     id: reservation.id,

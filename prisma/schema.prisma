@@ -15,8 +15,10 @@ model User {
   name         String?
   username     String?
   role         UserRole @default(customer)
+  restaurantId String?  @map("restaurant_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
+  restaurant   Restaurant?   @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
   reservations Reservation[]
   orders       Order[]
   auditLogs    AuditLog[]
@@ -30,11 +32,32 @@ enum UserRole {
   admin
 }
 
-model Category {
-  id          String    @id @default(cuid())
-  title       String
+model Restaurant {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
   description String?
-  products    Product[]
+  imageUrl    String?  @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  users        User[]
+  categories   Category[]
+  reservations Reservation[]
+  orders       Order[]
+  schedules    MenuSchedule[]
+  auditLogs    AuditLog[]
+
+  @@map("restaurants")
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  restaurantId String   @map("restaurant_id")
+  title        String
+  description  String?
+  products     Product[]
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@map("categories")
 }
@@ -63,6 +86,7 @@ enum ReservationStatus {
 
 model Reservation {
   id           String           @id @default(cuid())
+  restaurantId String           @map("restaurant_id")
   userId       String           @map("user_id")
   status       ReservationStatus @default(new)
   startTime    DateTime         @map("start_time")
@@ -70,8 +94,9 @@ model Reservation {
   personsCount Int              @map("persons_count")
   createdAt    DateTime         @default(now()) @map("created_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders     Order[]
 
   @@map("reservations")
 }
@@ -87,14 +112,16 @@ enum OrderStatus {
 
 model Order {
   id            String     @id @default(cuid())
-  reservationId String?    @map("reservation_id")
+  restaurantId  String     @map("restaurant_id")
+  reservationId String?   @map("reservation_id")
   userId        String     @map("user_id")
   status        OrderStatus @default(new)
   totalAmount   Decimal    @db.Decimal(10, 2) @map("total_amount")
   createdAt     DateTime   @default(now()) @map("created_at")
 
+  restaurant  Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   reservation Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   items       OrderItem[]
 
   @@map("orders")
@@ -115,23 +142,28 @@ model OrderItem {
 }
 
 model MenuSchedule {
-  id        String @id @default(cuid())
-  dayOfWeek Int    @map("day_of_week") // 0-6, 0 = Sunday
-  openTime  String @map("open_time")   // "09:00"
-  closeTime String @map("close_time")  // "22:00"
+  id           String @id @default(cuid())
+  restaurantId String @map("restaurant_id")
+  dayOfWeek    Int    @map("day_of_week")
+  openTime     String @map("open_time")
+  closeTime    String @map("close_time")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@map("menu_schedules")
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String   @map("user_id")
-  action     String
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id")
-  timestamp  DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  restaurantId String?  @map("restaurant_id")
+  action       String
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id")
+  timestamp    DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
 
   @@map("audit_logs")
 }

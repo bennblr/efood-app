@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getCurrentUserRole,
+  getAdminRestaurantId,
   unauthorized,
   forbidden,
   requireAdmin,
@@ -12,7 +13,16 @@ export async function GET(req: NextRequest) {
   if (!user) return unauthorized();
   if (!requireAdmin(user.role)) return forbidden();
 
+  const restaurantId = await getAdminRestaurantId(req);
+  if (!restaurantId) {
+    return NextResponse.json(
+      { error: "restaurantId required (query or session)" },
+      { status: 400 }
+    );
+  }
+
   const list = await prisma.order.findMany({
+    where: { restaurantId },
     include: {
       user: { select: { id: true, name: true, username: true } },
       items: { include: { product: true } },
@@ -23,6 +33,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(
     list.map((o) => ({
       id: o.id,
+      restaurantId: o.restaurantId,
       reservationId: o.reservationId,
       userId: o.userId,
       status: o.status,

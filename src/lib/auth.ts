@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
           email: null,
           image: null,
           role: user.role,
+          restaurantId: user.restaurantId ?? undefined,
         };
       },
     }),
@@ -72,6 +73,7 @@ export const authOptions: NextAuthOptions = {
           email: null,
           image: null,
           role: user.role,
+          restaurantId: user.restaurantId ?? undefined,
         };
       },
     }),
@@ -82,6 +84,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.telegramId = (user as { telegramId?: string }).telegramId;
         token.role = (user as { role?: string }).role;
+        token.restaurantId = (user as { restaurantId?: string }).restaurantId;
       }
       return token;
     },
@@ -90,6 +93,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as { id: string }).id = token.id as string;
         (session.user as { telegramId?: string }).telegramId = token.telegramId as string;
         (session.user as { role?: string }).role = token.role as string;
+        (session.user as { restaurantId?: string }).restaurantId = token.restaurantId as string | undefined;
       }
       return session;
     },

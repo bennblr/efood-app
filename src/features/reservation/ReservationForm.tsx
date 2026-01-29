@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { Form, InputNumber, DatePicker, Button, message } from "antd";
 import type { Dayjs } from "dayjs";
-import dayjs from "dayjs";
 import { reservationStore } from "@/stores";
 import { useRouter } from "next/navigation";
 
 const { RangePicker } = DatePicker;
 
-export function ReservationForm() {
+interface ReservationFormProps {
+  restaurantId: string;
+}
+
+export function ReservationForm({ restaurantId }: ReservationFormProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -21,6 +24,7 @@ export function ReservationForm() {
     setLoading(true);
     try {
       const res = await reservationStore.create({
+        restaurantId,
         startTime: v.range[0].toISOString(),
         endTime: v.range[1].toISOString(),
         personsCount: v.persons,
