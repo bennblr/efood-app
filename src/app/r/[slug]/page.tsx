@@ -25,16 +25,16 @@ export default observer(function RestaurantMenuPage() {
     if (!slug) return;
     setFetchDone(false);
     restaurantStore.fetchBySlug(slug).finally(() => setFetchDone(true));
-  }, [slug]);
+    menuStore.setSelectedCategoryId(null);
+    fetchCategories(slug);
+    fetchAllProducts(slug);
+  }, [slug, fetchCategories, fetchAllProducts]);
 
   useEffect(() => {
     if (current?.id) {
       menuStore.setRestaurantId(current.id);
-      menuStore.setSelectedCategoryId(null);
-      fetchCategories(current.id);
-      fetchAllProducts(current.id);
     }
-  }, [current?.id, fetchCategories, fetchAllProducts]);
+  }, [current?.id]);
 
   const handleSelectCategory = (id: string | null) => {
     menuStore.setSelectedCategoryId(id);
