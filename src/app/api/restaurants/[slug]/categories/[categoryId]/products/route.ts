@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+async function findRestaurant(param: string) {
+  return prisma.restaurant.findFirst({
+    where: { OR: [{ slug: param }, { id: param }] },
+  });
+}
+
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ restaurantId: string; categoryId: string }> }
+  { params }: { params: Promise<{ slug: string; categoryId: string }> }
 ) {
-  const { restaurantId, categoryId } = await params;
+  const { slug: param, categoryId } = await params;
+  const restaurant = await findRestaurant(param);
+  if (!restaurant) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const products = await prisma.product.findMany({
     where: {
       categoryId,
-      category: { restaurantId },
+      category: { restaurantId: restaurant.id },
     },
     orderBy: { title: "asc" },
   });
