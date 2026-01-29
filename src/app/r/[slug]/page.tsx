@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, usePathname } from "next/navigation";
 import { observer } from "mobx-react-lite";
 import { Typography, Spin, Button, Space } from "antd";
 import Link from "next/link";
@@ -11,19 +11,26 @@ import { ProductList } from "@/features/menu/ProductList";
 
 export default observer(function RestaurantMenuPage() {
   const params = useParams();
-  const slug = params?.slug as string | undefined;
-  const { current, loading: restLoading, fetchBySlug } = restaurantStore;
+  const pathname = usePathname();
+  // При клиентской навигации useParams() может быть пустым — берём slug из pathname
+  const slugFromParams = params?.slug as string | undefined;
+  const slugFromPath = pathname?.match(/^\/r\/([^/]+)/)?.[1];
+  const slug = slugFromParams || slugFromPath || "";
+
+  const [fetchDone, setFetchDone] = useState(false);
+  const { current, loading: restLoading } = restaurantStore;
   const {
     fetchCategories,
     fetchProducts,
     selectedCategoryId,
-    loading: menuLoading,
     restaurantId,
   } = menuStore;
 
   useEffect(() => {
-    if (slug) fetchBySlug(slug);
-  }, [slug, fetchBySlug]);
+    if (!slug) return;
+    setFetchDone(false);
+    restaurantStore.fetchBySlug(slug).finally(() => setFetchDone(true));
+  }, [slug]);
 
   useEffect(() => {
     if (current?.id) {
@@ -41,7 +48,8 @@ export default observer(function RestaurantMenuPage() {
     if (current?.id) menuStore.fetchProducts(current.id, id);
   };
 
-  if (restLoading || !slug) {
+  const isLoading = !slug || !fetchDone || restLoading;
+  if (isLoading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
         <Spin size="large" />
@@ -53,6 +61,10 @@ export default observer(function RestaurantMenuPage() {
     return (
       <>
         <Typography.Title level={4}>Ресторан не найден</Typography.Title>
+        <Typography.Paragraph type="secondary">
+          Ресторана с таким адресом нет в базе. Если вы только что задеплоили приложение, выполните на сервере заполнение базы:{" "}
+          <code>npm run db:seed</code> (см. TEST_ACCOUNTS.md).
+        </Typography.Paragraph>
         <Link href="/">
           <Button>К списку ресторанов</Button>
         </Link>

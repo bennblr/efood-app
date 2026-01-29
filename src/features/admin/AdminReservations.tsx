@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Table, Select, message } from "antd";
 import { adminStore } from "@/stores";
 import { apiFetch } from "@/lib/api";
@@ -14,9 +15,15 @@ const STATUS_OPTIONS: { value: ReservationStatus; label: string }[] = [
 ];
 
 export function AdminReservations() {
+  const pathname = usePathname();
+  const restaurantId = pathname?.match(/^\/admin\/r\/([^/]+)/)?.[1];
+
   useEffect(() => {
-    adminStore.fetchReservations();
-  }, []);
+    if (restaurantId) {
+      adminStore.setCurrentRestaurantId(restaurantId);
+      adminStore.fetchReservations();
+    }
+  }, [restaurantId]);
 
   const changeStatus = async (id: string, status: ReservationStatus) => {
     try {

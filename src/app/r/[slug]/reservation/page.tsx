@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { observer } from "mobx-react-lite";
 import { Typography, Spin, Button } from "antd";
 import Link from "next/link";
@@ -10,14 +10,18 @@ import { ReservationForm } from "@/features/reservation/ReservationForm";
 
 export default observer(function RestaurantReservationPage() {
   const params = useParams();
-  const slug = params?.slug as string | undefined;
-  const { current, loading, fetchBySlug } = restaurantStore;
+  const pathname = usePathname();
+  const slugFromParams = params?.slug as string | undefined;
+  const slugFromPath = pathname?.match(/^\/r\/([^/]+)/)?.[1];
+  const slug = slugFromParams || slugFromPath || "";
+
+  const { current, loading } = restaurantStore;
 
   useEffect(() => {
-    if (slug) fetchBySlug(slug);
-  }, [slug, fetchBySlug]);
+    if (slug) restaurantStore.fetchBySlug(slug);
+  }, [slug]);
 
-  if (loading || !slug) {
+  if (!slug || loading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
         <Spin size="large" />
