@@ -1,0 +1,36 @@
+{
+  "name": "efood",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "antd": "^5.22.0",
+    "dayjs": "^1.11.13",
+    "mobx": "^6.13.0",
+    "mobx-react-lite": "^4.0.7",
+    "next-auth": "^4.24.10",
+    "@prisma/client": "^6.0.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "prisma": "^6.0.0",
+    "typescript": "^5",
+    "@types/bcryptjs": "^2.4.6"
+  }
+}

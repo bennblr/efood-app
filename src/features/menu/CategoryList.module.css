@@ -1,0 +1,16 @@
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.card {
+  cursor: pointer;
+}
+
+.cardSelected {
+  cursor: pointer;
+  border-color: #1677ff;
+  background: #e6f4ff;
+}

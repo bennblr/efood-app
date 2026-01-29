@@ -1,0 +1,11 @@
+.card {
+  height: 100%;
+}
+
+.card :global(.ant-card-body) {
+  padding: 12px;
+}
+
+.card :global(.ant-card-meta-title) {
+  margin-bottom: 4px;
+}

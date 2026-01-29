@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  telegramId   String?  @unique @map("telegram_id")
+  phone        String?  @unique
+  passwordHash String?  @map("password_hash")
+  name         String?
+  username     String?
+  role         UserRole @default(customer)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  reservations Reservation[]
+  orders       Order[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  customer
+  employee
+  admin
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  categoryId  String   @map("category_id")
+  title       String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  imageUrl    String?  @map("image_url")
+  available   Boolean  @default(true)
+
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+enum ReservationStatus {
+  new
+  confirmed
+  cancelled
+  completed
+}
+
+model Reservation {
+  id           String           @id @default(cuid())
+  userId       String           @map("user_id")
+  status       ReservationStatus @default(new)
+  startTime    DateTime         @map("start_time")
+  endTime      DateTime         @map("end_time")
+  personsCount Int              @map("persons_count")
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@map("reservations")
+}
+
+enum OrderStatus {
+  new
+  confirmed
+  in_progress
+  ready
+  completed
+  cancelled
+}
+
+model Order {
+  id            String     @id @default(cuid())
+  reservationId String?    @map("reservation_id")
+  userId        String     @map("user_id")
+  status        OrderStatus @default(new)
+  totalAmount   Decimal    @db.Decimal(10, 2) @map("total_amount")
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  reservation Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String   @map("order_id")
+  productId   String   @map("product_id")
+  quantity    Int
+  priceAtTime Decimal  @db.Decimal(10, 2) @map("price_at_time")
+  comment     String?
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
+}
+
+model MenuSchedule {
+  id        String @id @default(cuid())
+  dayOfWeek Int    @map("day_of_week") // 0-6, 0 = Sunday
+  openTime  String @map("open_time")   // "09:00"
+  closeTime String @map("close_time")  // "22:00"
+
+  @@map("menu_schedules")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  timestamp  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}

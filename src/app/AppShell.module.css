@@ -1,0 +1,29 @@
+.layout {
+  min-height: 100vh;
+}
+
+.header {
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+}
+
+.menu {
+  flex: 1;
+  min-width: 0;
+  line-height: 64px;
+}
+
+.content {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.spinWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
