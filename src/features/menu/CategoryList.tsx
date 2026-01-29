@@ -3,11 +3,10 @@
 import { observer } from "mobx-react-lite";
 import { Card } from "antd";
 import { menuStore } from "@/stores";
-import type { Category } from "@/types";
 import styles from "./CategoryList.module.css";
 
 interface CategoryListProps {
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
 }
 
 export const CategoryList = observer(function CategoryList({
@@ -17,6 +16,13 @@ export const CategoryList = observer(function CategoryList({
 
   return (
     <div className={styles.wrap}>
+      <Card
+        size="small"
+        className={selectedCategoryId === null ? styles.cardSelected : styles.card}
+        onClick={() => onSelect(null)}
+      >
+        Все
+      </Card>
       {categories.map((c) => (
         <Card
           key={c.id}

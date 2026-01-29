@@ -13,20 +13,17 @@ interface MenuPageProps {
 
 /** Страница меню для выбранного ресторана. Используется при необходимости; основная точка входа — /r/[slug]. */
 export const MenuPage = observer(function MenuPage({ restaurantId }: MenuPageProps) {
-  const { fetchCategories, fetchProducts, selectedCategoryId, loading } =
-    menuStore;
+  const { fetchCategories, fetchAllProducts } = menuStore;
 
   useEffect(() => {
+    menuStore.setRestaurantId(restaurantId);
+    menuStore.setSelectedCategoryId(null);
     fetchCategories(restaurantId);
-  }, [restaurantId, fetchCategories]);
+    fetchAllProducts(restaurantId);
+  }, [restaurantId, fetchCategories, fetchAllProducts]);
 
-  useEffect(() => {
-    if (selectedCategoryId) fetchProducts(restaurantId, selectedCategoryId);
-  }, [restaurantId, selectedCategoryId, fetchProducts]);
-
-  const handleSelectCategory = (id: string) => {
+  const handleSelectCategory = (id: string | null) => {
     menuStore.setSelectedCategoryId(id);
-    menuStore.fetchProducts(restaurantId, id);
   };
 
   return (

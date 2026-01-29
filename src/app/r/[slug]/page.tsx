@@ -19,12 +19,7 @@ export default observer(function RestaurantMenuPage() {
 
   const [fetchDone, setFetchDone] = useState(false);
   const { current, loading: restLoading } = restaurantStore;
-  const {
-    fetchCategories,
-    fetchProducts,
-    selectedCategoryId,
-    restaurantId,
-  } = menuStore;
+  const { fetchCategories, fetchAllProducts } = menuStore;
 
   useEffect(() => {
     if (!slug) return;
@@ -35,17 +30,14 @@ export default observer(function RestaurantMenuPage() {
   useEffect(() => {
     if (current?.id) {
       menuStore.setRestaurantId(current.id);
+      menuStore.setSelectedCategoryId(null);
       fetchCategories(current.id);
+      fetchAllProducts(current.id);
     }
-  }, [current?.id, fetchCategories]);
+  }, [current?.id, fetchCategories, fetchAllProducts]);
 
-  useEffect(() => {
-    if (restaurantId && selectedCategoryId) fetchProducts(restaurantId, selectedCategoryId);
-  }, [restaurantId, selectedCategoryId, fetchProducts]);
-
-  const handleSelectCategory = (id: string) => {
+  const handleSelectCategory = (id: string | null) => {
     menuStore.setSelectedCategoryId(id);
-    if (current?.id) menuStore.fetchProducts(current.id, id);
   };
 
   const isLoading = !slug || !fetchDone || restLoading;
