@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { observer } from "mobx-react-lite";
-import { Typography, Spin, Button } from "antd";
+import { Typography, Spin, Button, Space } from "antd";
 import Link from "next/link";
-import { restaurantStore, menuStore } from "@/stores";
+import { restaurantStore, menuStore, userStore } from "@/stores";
 import { CategoryList } from "@/features/menu/CategoryList";
 import { ProductList } from "@/features/menu/ProductList";
 
@@ -78,6 +78,15 @@ export default observer(function RestaurantMenuPage() {
           </Link>
         </div>
       </div>
+      {userStore.isAuthenticated && (
+        <div style={{ marginBottom: 16, padding: 12, background: "#fafafa", borderRadius: 8 }}>
+          <Typography.Text type="secondary">В этом ресторане: </Typography.Text>
+          <Space>
+            <Link href="/my-reservations">Мои брони</Link>
+            <Link href="/orders">Мои заказы</Link>
+          </Space>
+        </div>
+      )}
       <CategoryList onSelect={handleSelectCategory} />
       <ProductList restaurantId={current.id} />
     </>

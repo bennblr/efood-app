@@ -40,10 +40,12 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
     adminStore.setCurrentRestaurantId(user.restaurantId);
   }, [user?.restaurantId]);
 
+  // Суперадмины: загружаем все рестораны для выбора. Владельцы/сотрудники: загружаем свой ресторан (один) для отображения названия.
   useEffect(() => {
-    if (isPlatformAdmin) adminStore.fetchRestaurants();
-  }, [isPlatformAdmin]);
+    if (userStore.isAdmin) adminStore.fetchRestaurants();
+  }, [userStore.isAdmin]);
 
+  // Только для суперадмина: при первой загрузке автоматически выбрать первый ресторан в списке.
   useEffect(() => {
     if (isPlatformAdmin && adminStore.restaurants.length && !adminStore.currentRestaurantId) {
       adminStore.setCurrentRestaurantId(adminStore.restaurants[0]?.id ?? null);
@@ -62,9 +64,9 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
     <div style={{ display: "flex", gap: 24 }}>
       <div style={{ minWidth: 180 }}>
         <Typography.Title level={5}>Админка</Typography.Title>
-        {isPlatformAdmin && (
+        {isPlatformAdmin ? (
           <div style={{ marginBottom: 12 }}>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Ресторан</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Ресторан для управления</Typography.Text>
             <Select
               style={{ width: "100%", marginTop: 4 }}
               placeholder="Выберите ресторан"
@@ -73,6 +75,13 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
               options={adminStore.restaurants.map((r) => ({ label: r.name, value: r.id }))}
             />
           </div>
+        ) : (
+          adminStore.restaurants.length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>Ваш ресторан</Typography.Text>
+              <div style={{ marginTop: 4, fontWeight: 500 }}>{adminStore.restaurants[0]?.name}</div>
+            </div>
+          )
         )}
         <Menu
           mode="inline"
