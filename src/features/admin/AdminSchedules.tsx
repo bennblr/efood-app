@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Table, Button, Form, Input, message } from "antd";
 import { adminStore } from "@/stores";
+import { apiFetch } from "@/lib/api";
 
 const DAY_NAMES = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
 
@@ -37,7 +38,7 @@ export function AdminSchedules() {
       return { dayOfWeek: d, openTime: v.openTime, closeTime: v.closeTime };
     });
     try {
-      await fetch("/api/admin/schedules", {
+      await apiFetch("/api/admin/schedules", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(list),
@@ -46,7 +47,7 @@ export function AdminSchedules() {
       setEditing(false);
       adminStore.fetchSchedules();
     } catch {
-      message.error("Ошибка");
+      // Ошибка уже показана через apiFetch
     }
   };
 

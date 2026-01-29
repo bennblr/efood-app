@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { Table, Button, Select, message } from "antd";
+import { Table, Select, message } from "antd";
 import { adminStore } from "@/stores";
+import { apiFetch } from "@/lib/api";
 import type { ReservationStatus } from "@/types";
 
 const STATUS_OPTIONS: { value: ReservationStatus; label: string }[] = [
@@ -19,16 +20,15 @@ export function AdminReservations() {
 
   const changeStatus = async (id: string, status: ReservationStatus) => {
     try {
-      await fetch(`/api/admin/reservations/${id}/status`, {
+      await apiFetch(`/api/admin/reservations/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
       message.success("Статус обновлён");
       adminStore.fetchReservations();
-    } catch (e) {
-      const err = e as { message?: string };
-      message.error(err?.message ?? "Ошибка");
+    } catch {
+      // Ошибка уже показана через apiFetch
     }
   };
 

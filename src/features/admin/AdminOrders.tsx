@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Table, Select, message } from "antd";
 import { adminStore } from "@/stores";
+import { apiFetch } from "@/lib/api";
 import type { OrderStatus } from "@/types";
 
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
@@ -21,16 +22,15 @@ export function AdminOrders() {
 
   const changeStatus = async (id: string, status: OrderStatus) => {
     try {
-      await fetch(`/api/admin/orders/${id}/status`, {
+      await apiFetch(`/api/admin/orders/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
       message.success("Статус обновлён");
       adminStore.fetchOrders();
-    } catch (e) {
-      const err = e as { message?: string };
-      message.error(err?.message ?? "Ошибка");
+    } catch {
+      // Ошибка уже показана через apiFetch
     }
   };
 

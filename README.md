@@ -17,7 +17,7 @@
 1. Скопируйте `.env.example` в `.env` и заполните:
    - `DATABASE_URL` — строка подключения к PostgreSQL
    - `NEXTAUTH_SECRET` — секрет для JWT (минимум 32 символа)
-   - `NEXTAUTH_URL` — URL приложения (например `https://your-domain.com`)
+   - `NEXTAUTH_URL` — URL приложения (локально: `http://localhost:3000`; на Render: `https://efood-app.onrender.com` — **обязательно** для работы входа после авторизации)
    - `TELEGRAM_BOT_TOKEN` — токен бота Telegram (для проверки initData)
 
 2. Создайте БД и примените схему:

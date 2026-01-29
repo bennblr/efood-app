@@ -1,5 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import type { Reservation, ReservationStatus } from "@/types";
+import type { Reservation } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 export class ReservationStore {
   list: Reservation[] = [];
@@ -26,8 +27,7 @@ export class ReservationStore {
     this.loading = true;
     this.error = null;
     try {
-      const res = await fetch("/api/reservations/my");
-      if (!res.ok) throw new Error(await res.text());
+      const res = await apiFetch("/api/reservations/my");
       const data = await res.json();
       runInAction(() => {
         this.list = data;
@@ -51,12 +51,11 @@ export class ReservationStore {
     this.loading = true;
     this.error = null;
     try {
-      const res = await fetch("/api/reservations", {
+      const res = await apiFetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
       });
-      if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       runInAction(() => {
         this.list.unshift(data);

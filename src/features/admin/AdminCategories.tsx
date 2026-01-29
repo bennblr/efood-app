@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, Input, message } from "antd";
 import { adminStore } from "@/stores";
+import { apiFetch } from "@/lib/api";
 
 export function AdminCategories() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -29,14 +30,14 @@ export function AdminCategories() {
     const v = await form.validateFields();
     try {
       if (editingId) {
-        await fetch(`/api/admin/categories/${editingId}`, {
+        await apiFetch(`/api/admin/categories/${editingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(v),
         });
         message.success("Обновлено");
       } else {
-        await fetch("/api/admin/categories", {
+        await apiFetch("/api/admin/categories", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(v),
@@ -45,19 +46,19 @@ export function AdminCategories() {
       }
       setModalOpen(false);
       adminStore.fetchCategories();
-    } catch (e) {
-      message.error("Ошибка");
+    } catch {
+      // Ошибка уже показана через apiFetch
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Удалить категорию?")) return;
     try {
-      await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/categories/${id}`, { method: "DELETE" });
       message.success("Удалено");
       adminStore.fetchCategories();
     } catch {
-      message.error("Ошибка");
+      // Ошибка уже показана через apiFetch
     }
   };
 

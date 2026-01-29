@@ -5,6 +5,7 @@ import { Form, Input, Button, message } from "antd";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { userStore } from "@/stores";
+import { apiFetch } from "@/lib/api";
 
 export function RegisterForm() {
   const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export function RegisterForm() {
   }) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await apiFetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -27,10 +28,6 @@ export function RegisterForm() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        message.error(data.error ?? "Ошибка регистрации");
-        return;
-      }
       const signInRes = await signIn("credentials-phone", {
         redirect: false,
         phone: v.phone.trim(),

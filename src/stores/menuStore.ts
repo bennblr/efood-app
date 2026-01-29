@@ -1,5 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import type { Category, Product } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 export class MenuStore {
   categories: Category[] = [];
@@ -41,8 +42,7 @@ export class MenuStore {
     this.loading = true;
     this.error = null;
     try {
-      const res = await fetch("/api/menu/categories");
-      if (!res.ok) throw new Error(await res.text());
+      const res = await apiFetch("/api/menu/categories");
       const data = await res.json();
       runInAction(() => {
         this.categories = data;
@@ -62,8 +62,7 @@ export class MenuStore {
     this.loading = true;
     this.error = null;
     try {
-      const res = await fetch(`/api/menu/categories/${categoryId}/products`);
-      if (!res.ok) throw new Error(await res.text());
+      const res = await apiFetch(`/api/menu/categories/${categoryId}/products`);
       const data = await res.json();
       runInAction(() => {
         this.productsByCategory[categoryId] = data;

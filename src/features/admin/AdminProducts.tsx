@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Table, Button, Modal, Form, Input, InputNumber, Switch, Select, message } from "antd";
 import { adminStore } from "@/stores";
+import { apiFetch } from "@/lib/api";
 
 export function AdminProducts() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,14 +39,14 @@ export function AdminProducts() {
     const v = await form.validateFields();
     try {
       if (editingId) {
-        await fetch(`/api/admin/products/${editingId}`, {
+        await apiFetch(`/api/admin/products/${editingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(v),
         });
         message.success("Обновлено");
       } else {
-        await fetch("/api/admin/products", {
+        await apiFetch("/api/admin/products", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(v),
@@ -55,18 +56,18 @@ export function AdminProducts() {
       setModalOpen(false);
       adminStore.fetchProducts();
     } catch {
-      message.error("Ошибка");
+      // Ошибка уже показана через apiFetch
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Удалить блюдо?")) return;
     try {
-      await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      await apiFetch(`/api/admin/products/${id}`, { method: "DELETE" });
       message.success("Удалено");
       adminStore.fetchProducts();
     } catch {
-      message.error("Ошибка");
+      // Ошибка уже показана через apiFetch
     }
   };
 

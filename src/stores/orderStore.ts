@@ -1,5 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import type { Order } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 export class OrderStore {
   list: Order[] = [];
@@ -26,8 +27,7 @@ export class OrderStore {
     this.loading = true;
     this.error = null;
     try {
-      const res = await fetch("/api/orders/my");
-      if (!res.ok) throw new Error(await res.text());
+      const res = await apiFetch("/api/orders/my");
       const data = await res.json();
       runInAction(() => {
         this.list = data;
@@ -50,12 +50,11 @@ export class OrderStore {
     this.loading = true;
     this.error = null;
     try {
-      const res = await fetch("/api/orders", {
+      const res = await apiFetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
       });
-      if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       runInAction(() => {
         this.list.unshift(data);
