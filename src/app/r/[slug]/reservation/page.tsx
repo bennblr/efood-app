@@ -71,7 +71,7 @@ export default observer(function RestaurantReservationPage() {
         restaurantSlug={current.slug}
         minOrderAmount={minOrderAmount}
         cartTotal={totalSum}
-        hasPreorder={showPreorder}
+        hasPreorder={!!showPreorder}
       />
     </>
   );
