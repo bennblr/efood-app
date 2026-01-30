@@ -8,7 +8,8 @@ export async function POST(req: NextRequest) {
   if (!userId) return unauthorized();
 
   const body = await req.json();
-  const { restaurantId, reservationId, items } = body;
+  const { restaurantId, reservationId, type: orderType, comment: orderComment, items } = body;
+  const type = orderType === "delivery" || orderType === "with_reservation" ? orderType : "dine_in";
 
   if (!restaurantId || !Array.isArray(items) || items.length === 0) {
     return NextResponse.json(
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
   const priceMap = new Map(products.map((p) => [p.id, p.price]));
 
   let totalAmount = new Decimal(0);
-  const orderItems: { productId: string; quantity: number; priceAtTime: Decimal; comment?: string }[] = [];
+  const orderItems: { productId: string; quantity: number; priceAtTime: Decimal }[] = [];
 
   for (const item of items) {
     const price = priceMap.get(item.productId);
@@ -45,7 +46,6 @@ export async function POST(req: NextRequest) {
       productId: item.productId,
       quantity: item.quantity,
       priceAtTime: price,
-      comment: item.comment,
     });
   }
 
@@ -61,8 +61,10 @@ export async function POST(req: NextRequest) {
       restaurantId,
       userId,
       reservationId: reservationId || null,
+      type,
       status: "new",
       totalAmount,
+      comment: orderComment ?? null,
       items: {
         create: orderItems,
       },
@@ -77,7 +79,9 @@ export async function POST(req: NextRequest) {
     restaurantId: order.restaurantId,
     reservationId: order.reservationId,
     userId: order.userId,
+    type: order.type,
     status: order.status,
+    comment: order.comment,
     totalAmount: Number(order.totalAmount),
     createdAt: order.createdAt.toISOString(),
     items: order.items.map((i) => ({

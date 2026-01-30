@@ -25,6 +25,7 @@ export async function GET(
     slug: restaurant.slug,
     description: restaurant.description,
     imageUrl: restaurant.imageUrl,
+    minOrderAmount: restaurant.minOrderAmount != null ? Number(restaurant.minOrderAmount) : null,
     createdAt: restaurant.createdAt.toISOString(),
   });
 }

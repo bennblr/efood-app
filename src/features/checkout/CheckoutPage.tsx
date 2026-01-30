@@ -6,9 +6,22 @@ import { Typography, Button, message } from "antd";
 import Link from "next/link";
 import { cartStore, orderStore } from "@/stores";
 
+const ORDER_TYPE_LABELS: Record<string, string> = {
+  dine_in: "В заведении",
+  delivery: "Доставка",
+  with_reservation: "К брони",
+};
+
 export function CheckoutPage() {
   const searchParams = useSearchParams();
   const reservationId = searchParams.get("reservationId");
+  const typeParam = searchParams.get("type");
+  const orderType =
+    typeParam === "delivery"
+      ? "delivery"
+      : reservationId
+        ? "with_reservation"
+        : "dine_in";
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -27,10 +40,11 @@ export function CheckoutPage() {
       await orderStore.create({
         restaurantId: cartStore.restaurantId,
         reservationId: reservationId || undefined,
+        type: orderType,
+        comment: cartStore.orderComment || undefined,
         items: cartStore.items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
-          comment: i.comment,
         })),
       });
       cartStore.clear();
@@ -59,6 +73,7 @@ export function CheckoutPage() {
       <Typography.Title level={4}>Подтверждение заказа</Typography.Title>
       <Typography.Paragraph>
         Итого: {cartStore.totalSum} ₽. Позиций: {cartStore.totalCount}.
+        Тип: {ORDER_TYPE_LABELS[orderType] ?? orderType}.
         {reservationId && " Заказ будет привязан к брони."}
       </Typography.Paragraph>
       <Button type="primary" loading={loading} onClick={submit}>

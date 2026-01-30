@@ -8,6 +8,7 @@ import type { Product } from "@/types";
 
 interface ProductListProps {
   restaurantId?: string;
+  restaurantSlug?: string;
 }
 
 function groupByCategory(products: Product[]): { categoryId: string; categoryTitle: string; products: Product[] }[] {
@@ -29,7 +30,7 @@ function groupByCategory(products: Product[]): { categoryId: string; categoryTit
   }));
 }
 
-export const ProductList = observer(function ProductList({ restaurantId }: ProductListProps) {
+export const ProductList = observer(function ProductList({ restaurantId, restaurantSlug }: ProductListProps) {
   const { products, loading, selectedCategoryId, allProductsInOrder } = menuStore;
 
   if (loading) return <Spin size="large" />;
@@ -40,7 +41,7 @@ export const ProductList = observer(function ProductList({ restaurantId }: Produ
       <Row gutter={[16, 16]}>
         {products.map((p) => (
           <Col xs={24} sm={12} md={8} key={p.id}>
-            <ProductCard product={p} restaurantId={restaurantId} />
+            <ProductCard product={p} restaurantId={restaurantId} restaurantSlug={restaurantSlug} />
           </Col>
         ))}
       </Row>
@@ -58,7 +59,7 @@ export const ProductList = observer(function ProductList({ restaurantId }: Produ
           <Row gutter={[16, 16]}>
             {groupProducts.map((p) => (
               <Col xs={24} sm={12} md={8} key={p.id}>
-                <ProductCard product={p} restaurantId={restaurantId} />
+                <ProductCard product={p} restaurantId={restaurantId} restaurantSlug={restaurantSlug} />
               </Col>
             ))}
           </Row>

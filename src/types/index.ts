@@ -10,12 +10,15 @@ export type OrderStatus =
   | "completed"
   | "cancelled";
 
+export type OrderType = "dine_in" | "delivery" | "with_reservation";
+
 export interface Restaurant {
   id: string;
   name: string;
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  minOrderAmount: number | null;
   createdAt: string;
 }
 
@@ -85,8 +88,10 @@ export interface Order {
   restaurantId: string;
   reservationId: string | null;
   userId: string;
+  type: OrderType;
   status: OrderStatus;
   totalAmount: number;
+  comment?: string | null;
   createdAt: string;
   reservation?: Reservation | null;
   user?: User;

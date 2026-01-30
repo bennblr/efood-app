@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, Button, Image } from "antd";
+import { Card, Button, Image, InputNumber, Space } from "antd";
+import { observer } from "mobx-react-lite";
 import type { Product } from "@/types";
 import { cartStore } from "@/stores";
 import styles from "./ProductCard.module.css";
@@ -8,10 +9,22 @@ import styles from "./ProductCard.module.css";
 interface ProductCardProps {
   product: Product;
   restaurantId?: string;
+  restaurantSlug?: string;
 }
 
-export function ProductCard({ product, restaurantId }: ProductCardProps) {
-  const addToCart = () => cartStore.addItem(product, 1, undefined, restaurantId);
+export const ProductCard = observer(function ProductCard({
+  product,
+  restaurantId,
+  restaurantSlug,
+}: ProductCardProps) {
+  const cartItem = cartStore.items.find((i) => i.productId === product.id);
+  const inCart = cartItem != null && cartItem.quantity > 0;
+
+  const addOne = () =>
+    cartStore.addItem(product, 1, undefined, restaurantId, restaurantSlug);
+  const setQty = (v: number | null) => {
+    if (v != null) cartStore.setQuantity(product.id, v);
+  };
 
   return (
     <Card
@@ -27,9 +40,26 @@ export function ProductCard({ product, restaurantId }: ProductCardProps) {
         ) : null
       }
       actions={[
-        <Button type="primary" key="add" onClick={addToCart}>
-          В корзину · {product.price} ₽
-        </Button>,
+        inCart ? (
+          <Space key="incart" style={{ width: "100%", justifyContent: "center" }}>
+            <span style={{ color: "var(--ant-color-primary)" }}>В корзине</span>
+            <InputNumber
+              min={1}
+              value={cartItem.quantity}
+              onChange={setQty}
+              size="small"
+              style={{ width: 56 }}
+            />
+          </Space>
+        ) : (
+          <Button
+            type="primary"
+            key="add"
+            onClick={addOne}
+          >
+            В корзину · {product.price} ₽
+          </Button>
+        ),
       ]}
     >
       <Card.Meta
@@ -38,4 +68,4 @@ export function ProductCard({ product, restaurantId }: ProductCardProps) {
       />
     </Card>
   );
-}
+});

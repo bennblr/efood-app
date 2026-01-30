@@ -22,7 +22,7 @@ export function AdminRestaurants() {
 
   const handleEdit = (
     id: string,
-    record: { name: string; slug: string; description?: string | null; imageUrl?: string | null }
+    record: { name: string; slug: string; description?: string | null; imageUrl?: string | null; minOrderAmount?: number | null }
   ) => {
     setEditingId(id);
     form.setFieldsValue({
@@ -30,6 +30,7 @@ export function AdminRestaurants() {
       slug: record.slug,
       description: record.description ?? "",
       imageUrl: record.imageUrl ?? "",
+      minOrderAmount: record.minOrderAmount ?? undefined,
     });
     setModalOpen(true);
   };
@@ -46,6 +47,7 @@ export function AdminRestaurants() {
             slug: v.slug,
             description: v.description || null,
             imageUrl: v.imageUrl || null,
+            minOrderAmount: v.minOrderAmount != null ? Number(v.minOrderAmount) : null,
           }),
         });
         message.success("Ресторан обновлён");
@@ -58,6 +60,7 @@ export function AdminRestaurants() {
             slug: v.slug,
             description: v.description || null,
             imageUrl: v.imageUrl || null,
+            minOrderAmount: v.minOrderAmount != null ? Number(v.minOrderAmount) : null,
           }),
         });
         message.success("Ресторан создан");
@@ -93,6 +96,11 @@ export function AdminRestaurants() {
           { title: "Название", dataIndex: "name" },
           { title: "Slug", dataIndex: "slug" },
           { title: "Описание", dataIndex: "description", ellipsis: true },
+          {
+            title: "Мин. сумма предзаказа",
+            dataIndex: "minOrderAmount",
+            render: (v: number | null) => (v != null ? `${v} ₽` : "—"),
+          },
           {
             title: "Действия",
             key: "actions",
@@ -131,6 +139,13 @@ export function AdminRestaurants() {
           </Form.Item>
           <Form.Item name="imageUrl" label="URL изображения">
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="minOrderAmount"
+            label="Минимальная сумма предзаказа (₽)"
+            help="Если указана, бронирование с предзаказом возможно только при сумме корзины не меньше этой"
+          >
+            <Input type="number" min={0} step={100} placeholder="Не указано" />
           </Form.Item>
         </Form>
       </Modal>

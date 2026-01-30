@@ -22,8 +22,10 @@ export async function GET(req: NextRequest) {
       restaurantId: o.restaurantId,
       reservationId: o.reservationId,
       userId: o.userId,
+      type: o.type,
       status: o.status,
       totalAmount: Number(o.totalAmount),
+      comment: o.comment,
       createdAt: o.createdAt.toISOString(),
       restaurant: o.restaurant,
       items: o.items.map((i) => ({

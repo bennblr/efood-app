@@ -1,34 +1,69 @@
 import { makeAutoObservable } from "mobx";
 import type { CartItem, Product } from "@/types";
 
+export type PendingReplace = {
+  product: Product;
+  quantity: number;
+  restaurantId: string;
+  restaurantSlug?: string;
+};
+
 export class CartStore {
   restaurantId: string | null = null;
+  restaurantSlug: string | null = null;
   items: CartItem[] = [];
+  /** Комментарий ко всему заказу/брони (не к каждому товару). */
+  orderComment: string = "";
+  /** При добавлении из другого ресторана — показываем подтверждение; после подтверждения корзина заменяется. */
+  pendingReplace: PendingReplace | null = null;
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  /** Добавить в корзину. restaurantId — id ресторана (из категории/контекста). При смене ресторана корзина очищается. */
-  addItem(product: Product, quantity = 1, comment?: string, restaurantId?: string) {
+  /** Добавить в корзину. При смене ресторана возвращает "replace_required" и ставит pendingReplace; иначе "added". */
+  addItem(
+    product: Product,
+    quantity = 1,
+    _comment?: string,
+    restaurantId?: string,
+    restaurantSlug?: string
+  ): "added" | "replace_required" {
     const rid = restaurantId ?? this.restaurantId;
+    const rslug = restaurantSlug ?? this.restaurantSlug;
     if (rid && this.restaurantId !== null && this.restaurantId !== rid) {
-      this.clear();
+      this.pendingReplace = { product, quantity, restaurantId: rid, restaurantSlug: rslug ?? undefined };
+      return "replace_required";
     }
     if (rid) this.restaurantId = rid;
+    if (rslug) this.restaurantSlug = rslug;
 
     const existing = this.items.find((i) => i.productId === product.id);
     if (existing) {
       existing.quantity += quantity;
-      if (comment !== undefined) existing.comment = comment;
     } else {
       this.items.push({
         productId: product.id,
         product,
         quantity,
-        comment,
       });
     }
+    return "added";
+  }
+
+  /** Подтвердить замену корзины: удалить текущие товары и добавить pendingReplace. */
+  confirmReplace() {
+    const p = this.pendingReplace;
+    this.pendingReplace = null;
+    if (!p) return;
+    this.clear();
+    this.restaurantId = p.restaurantId;
+    this.restaurantSlug = p.restaurantSlug ?? null;
+    this.addItem(p.product, p.quantity, undefined, p.restaurantId, p.restaurantSlug);
+  }
+
+  cancelReplace() {
+    this.pendingReplace = null;
   }
 
   removeItem(productId: string) {
@@ -43,14 +78,15 @@ export class CartStore {
     }
   }
 
-  setComment(productId: string, comment: string) {
-    const item = this.items.find((i) => i.productId === productId);
-    if (item) item.comment = comment;
+  setOrderComment(comment: string) {
+    this.orderComment = comment;
   }
 
   clear() {
     this.items = [];
     this.restaurantId = null;
+    this.restaurantSlug = null;
+    this.orderComment = "";
   }
 
   get totalSum() {

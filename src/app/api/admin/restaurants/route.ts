@@ -18,30 +18,22 @@ export async function GET(req: NextRequest) {
     orderBy: { name: "asc" },
   });
 
+  const mapR = (r: { id: string; name: string; slug: string; description: string | null; imageUrl: string | null; minOrderAmount: unknown; createdAt: Date }) => ({
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    description: r.description,
+    imageUrl: r.imageUrl,
+    minOrderAmount: r.minOrderAmount != null ? Number(r.minOrderAmount) : null,
+    createdAt: r.createdAt.toISOString(),
+  });
+
   if (!isPlatformAdmin(user.role, user.restaurantId)) {
     const mine = restaurants.filter((r) => r.id === user.restaurantId);
-    return NextResponse.json(
-      mine.map((r) => ({
-        id: r.id,
-        name: r.name,
-        slug: r.slug,
-        description: r.description,
-        imageUrl: r.imageUrl,
-        createdAt: r.createdAt.toISOString(),
-      }))
-    );
+    return NextResponse.json(mine.map(mapR));
   }
 
-  return NextResponse.json(
-    restaurants.map((r) => ({
-      id: r.id,
-      name: r.name,
-      slug: r.slug,
-      description: r.description,
-      imageUrl: r.imageUrl,
-      createdAt: r.createdAt.toISOString(),
-    }))
-  );
+  return NextResponse.json(restaurants.map(mapR));
 }
 
 export async function POST(req: NextRequest) {
@@ -50,7 +42,7 @@ export async function POST(req: NextRequest) {
   if (!isPlatformAdmin(user.role, user.restaurantId)) return forbidden();
 
   const body = await req.json();
-  const { name, slug, description, imageUrl } = body;
+  const { name, slug, description, imageUrl, minOrderAmount } = body;
 
   if (!name || !slug) {
     return NextResponse.json(
@@ -83,6 +75,7 @@ export async function POST(req: NextRequest) {
       slug: slugNormalized,
       description: description ?? null,
       imageUrl: imageUrl ?? null,
+      minOrderAmount: minOrderAmount != null ? Number(minOrderAmount) : null,
     },
   });
   await createAuditLog(user.userId, "CREATE_RESTAURANT", "restaurant", restaurant.id);
@@ -92,6 +85,7 @@ export async function POST(req: NextRequest) {
     slug: restaurant.slug,
     description: restaurant.description,
     imageUrl: restaurant.imageUrl,
+    minOrderAmount: restaurant.minOrderAmount != null ? Number(restaurant.minOrderAmount) : null,
     createdAt: restaurant.createdAt.toISOString(),
   });
 }

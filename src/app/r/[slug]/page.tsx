@@ -100,7 +100,7 @@ export default observer(function RestaurantMenuPage() {
         </div>
       )}
       <CategoryList onSelect={handleSelectCategory} />
-      <ProductList restaurantId={current.id} />
+      <ProductList restaurantId={current.id} restaurantSlug={current.slug} />
     </>
   );
 });

@@ -3,18 +3,40 @@
 import { useState } from "react";
 import { Form, InputNumber, DatePicker, Button, message } from "antd";
 import type { Dayjs } from "dayjs";
-import { reservationStore } from "@/stores";
+import { reservationStore, cartStore, orderStore } from "@/stores";
 import { useRouter } from "next/navigation";
 
 const { RangePicker } = DatePicker;
 
 interface ReservationFormProps {
   restaurantId: string;
+  restaurantSlug?: string;
+  /** Минимальная сумма предзаказа ресторана; если передан и сумма корзины меньше — кнопка предзаказа недоступна */
+  minOrderAmount?: number | null;
+  /** Текущая сумма корзины */
+  cartTotal?: number;
+  /** Есть ли предзаказ (корзина этого ресторана не пуста) */
+  hasPreorder?: boolean;
 }
 
-export function ReservationForm({ restaurantId }: ReservationFormProps) {
+export function ReservationForm({
+  restaurantId,
+  restaurantSlug,
+  minOrderAmount,
+  cartTotal = 0,
+  hasPreorder: hasPreorderProp,
+}: ReservationFormProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const hasPreorder =
+    hasPreorderProp ?? (cartStore.restaurantId === restaurantId && !cartStore.isEmpty);
+  const belowMinOrder =
+    hasPreorder &&
+    minOrderAmount != null &&
+    minOrderAmount > 0 &&
+    cartTotal < minOrderAmount;
+  const canSubmitWithPreorder = hasPreorder && !belowMinOrder;
 
   const onFinish = async (v: {
     range: [Dayjs, Dayjs] | null;
@@ -29,10 +51,26 @@ export function ReservationForm({ restaurantId }: ReservationFormProps) {
         endTime: v.range[1].toISOString(),
         personsCount: v.persons,
       });
-      message.success("Бронь создана");
-      router.push(`/checkout?reservationId=${res.id}`);
+      if (hasPreorder && canSubmitWithPreorder) {
+        await orderStore.create({
+          restaurantId,
+          reservationId: res.id,
+          type: "with_reservation",
+          comment: cartStore.orderComment || undefined,
+          items: cartStore.items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+          })),
+        });
+        cartStore.clear();
+        message.success("Бронь и предзаказ оформлены");
+        router.push("/my-reservations");
+      } else {
+        message.success("Бронь создана");
+        router.push(`/checkout?reservationId=${res.id}`);
+      }
     } catch {
-      message.error(reservationStore.error ?? "Ошибка");
+      message.error(reservationStore.error ?? orderStore.error ?? "Ошибка");
     } finally {
       setLoading(false);
     }
@@ -60,7 +98,9 @@ export function ReservationForm({ restaurantId }: ReservationFormProps) {
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading}>
-          Забронировать и перейти к заказу
+          {hasPreorder && !belowMinOrder
+            ? "Забронировать и оформить предзаказ"
+            : "Забронировать и перейти к заказу"}
         </Button>
       </Form.Item>
     </Form>

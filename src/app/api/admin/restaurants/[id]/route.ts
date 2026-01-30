@@ -19,12 +19,13 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json();
-  const { name, slug, description, imageUrl } = body;
+  const { name, slug, description, imageUrl, minOrderAmount } = body;
 
   const data: Record<string, unknown> = {};
   if (name !== undefined) data.name = name;
   if (description !== undefined) data.description = description;
   if (imageUrl !== undefined) data.imageUrl = imageUrl;
+  if (minOrderAmount !== undefined) data.minOrderAmount = minOrderAmount != null ? Number(minOrderAmount) : null;
   if (slug !== undefined) {
     const slugNormalized = String(slug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     if (slugNormalized) data.slug = slugNormalized;
@@ -41,6 +42,7 @@ export async function PATCH(
     slug: restaurant.slug,
     description: restaurant.description,
     imageUrl: restaurant.imageUrl,
+    minOrderAmount: restaurant.minOrderAmount != null ? Number(restaurant.minOrderAmount) : null,
     createdAt: restaurant.createdAt.toISOString(),
   });
 }

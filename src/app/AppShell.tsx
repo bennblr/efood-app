@@ -7,6 +7,7 @@ import { signIn, signOut } from "next-auth/react";
 import { Layout, Menu, Spin } from "antd";
 import { userStore } from "@/stores";
 import { Providers } from "./providers/Providers";
+import { CartReplaceConfirmModal } from "@/features/cart/CartReplaceConfirmModal";
 import styles from "./AppShell.module.css";
 
 declare global {
@@ -108,6 +109,7 @@ const AppShellInnerBase = ({ children }: { children: React.ReactNode }) => {
       <Layout.Content className={styles.content}>
         {children}
       </Layout.Content>
+      <CartReplaceConfirmModal />
     </Layout>
   );
 }
